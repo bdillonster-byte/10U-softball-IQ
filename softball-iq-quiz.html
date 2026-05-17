@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Softball IQ Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #FFD93D;
+    --coral: #FF6B6B;
+    --teal: #4ECDC4;
+    --navy: #1A1A2E;
+    --green: #6BCB77;
+    --white: #FFFDF7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--navy);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+  .diamond-bg { position: fixed; top: -80px; right: -80px; width: 320px; height: 320px; background: rgba(255,217,61,0.07); transform: rotate(45deg); border-radius: 24px; }
+  .diamond-bg2 { position: fixed; bottom: -100px; left: -100px; width: 380px; height: 380px; background: rgba(78,205,196,0.06); transform: rotate(45deg); border-radius: 24px; }
+  .wrapper { max-width: 680px; margin: 0 auto; padding: 32px 20px 60px; position: relative; z-index: 1; }
+
+  .header { text-align: center; margin-bottom: 36px; animation: fadeDown 0.6s ease; }
+  .softball-emoji { font-size: 56px; display: block; margin-bottom: 8px; animation: spin 0.8s ease 0.2s both; }
+  @keyframes spin { from { transform: rotate(-20deg) scale(0.5); opacity: 0; } to { transform: rotate(0) scale(1); opacity: 1; } }
+  .header h1 { font-family: 'Fredoka One', cursive; font-size: 2.6rem; color: var(--gold); letter-spacing: 1px; text-shadow: 3px 3px 0 rgba(0,0,0,0.3); line-height: 1.1; }
+  .header p { color: rgba(255,255,255,0.65); font-size: 1rem; margin-top: 8px; font-weight: 600; }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* NAME SCREEN */
+  .name-screen { background: var(--white); border-radius: 20px; padding: 36px 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); text-align: center; animation: slideUp 0.45s cubic-bezier(.22,1,.36,1); }
+  .name-screen h2 { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: var(--navy); margin-bottom: 8px; }
+  .name-screen p { color: #666; font-weight: 600; font-size: 0.95rem; margin-bottom: 24px; line-height: 1.5; }
+  .name-input { width: 100%; padding: 14px 18px; font-family: 'Nunito', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--navy); border: 3px solid #e0e0d8; border-radius: 12px; outline: none; transition: border-color 0.2s; background: #fafaf6; text-align: center; margin-bottom: 18px; }
+  .name-input:focus { border-color: var(--teal); }
+  .name-input::placeholder { color: #bbb; font-weight: 600; }
+  .q-count-select { margin-bottom: 18px; }
+  .q-count-select label { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #888; display: block; margin-bottom: 8px; }
+  .count-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .count-btn { padding: 8px 22px; border: 2.5px solid #e0e0d8; border-radius: 99px; background: white; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.95rem; color: var(--navy); cursor: pointer; transition: all 0.15s; }
+  .count-btn.active { background: var(--navy); color: var(--gold); border-color: var(--navy); }
+  .start-btn { width: 100%; padding: 15px; background: var(--navy); color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 1.2rem; letter-spacing: 1px; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); transition: transform 0.15s, box-shadow 0.15s; }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0,0,0,0.25); }
+  .start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom: 28px; }
+  .progress-label { display: flex; justify-content: space-between; color: rgba(255,255,255,0.5); font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .progress-track { background: rgba(255,255,255,0.1); border-radius: 99px; height: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold)); border-radius: 99px; transition: width 0.5s ease; }
+
+  /* QUESTION CARD */
+  .card { background: var(--white); border-radius: 20px; padding: 28px 28px 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .q-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--navy); color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 0.85rem; padding: 4px 12px; border-radius: 99px; margin-bottom: 14px; letter-spacing: 0.5px; }
+  .situation-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; padding: 5px 14px; border-radius: 99px; margin-bottom: 14px; }
+  .q-text { font-size: 1.08rem; font-weight: 700; color: var(--navy); line-height: 1.55; margin-bottom: 22px; }
+  .diamond-diagram { width: 110px; height: 110px; float: right; margin: 0 0 12px 16px; flex-shrink: 0; }
+  .diamond-diagram svg { width: 100%; height: 100%; }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice-btn { background: #F4F4F0; border: 2.5px solid transparent; border-radius: 12px; padding: 13px 16px; text-align: left; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--navy); display: flex; align-items: flex-start; gap: 10px; transition: all 0.18s ease; }
+  .choice-btn:hover:not(:disabled) { background: #eef6ff; border-color: var(--teal); transform: translateX(3px); }
+  .choice-letter { background: var(--navy); color: white; font-family: 'Fredoka One', cursive; width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; margin-top: 1px; transition: background 0.18s; }
+  .choice-btn.correct { background: #e8faf0; border-color: var(--green); color: #1a5c35; }
+  .choice-btn.correct .choice-letter { background: var(--green); }
+  .choice-btn.wrong { background: #fff0f0; border-color: var(--coral); color: #8b1a1a; opacity: 0.8; }
+  .choice-btn.wrong .choice-letter { background: var(--coral); }
+  .choice-btn:disabled { cursor: not-allowed; }
+  .feedback { margin-top: 18px; border-radius: 12px; padding: 14px 16px; font-size: 0.93rem; font-weight: 700; line-height: 1.5; display: none; }
+  .feedback.show { display: block; animation: popIn 0.3s cubic-bezier(.22,1,.36,1); }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+  .feedback.correct-fb { background: #e8faf0; color: #1a5c35; border-left: 4px solid var(--green); }
+  .feedback.wrong-fb { background: #fff0f0; color: #8b1a1a; border-left: 4px solid var(--coral); }
+  .next-btn { margin-top: 18px; width: 100%; padding: 14px; background: var(--navy); color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 1.1rem; letter-spacing: 1px; border: none; border-radius: 12px; cursor: pointer; display: none; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  .next-btn.show { display: block; }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0,0,0,0.25); }
+
+  /* SCORE SCREEN */
+  .score-screen { background: var(--white); border-radius: 20px; padding: 40px 28px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.25); animation: slideUp 0.5s cubic-bezier(.22,1,.36,1); }
+  .player-name-result { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--navy); margin-bottom: 4px; }
+  .score-big { font-family: 'Fredoka One', cursive; font-size: 5rem; color: var(--navy); line-height: 1; margin: 8px 0 4px; }
+  .score-label { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: rgba(26,26,46,0.45); margin-bottom: 20px; }
+  .grade-badge { display: inline-block; font-family: 'Fredoka One', cursive; font-size: 1.3rem; padding: 8px 24px; border-radius: 99px; margin-bottom: 18px; }
+  .grade-S { background: var(--gold); color: var(--navy); }
+  .grade-A { background: var(--green); color: white; }
+  .grade-B { background: var(--teal); color: var(--navy); }
+  .grade-C { background: var(--coral); color: white; }
+  .score-msg { font-size: 1rem; color: #555; font-weight: 600; line-height: 1.6; margin-bottom: 28px; }
+  .review-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--navy); margin-bottom: 14px; text-align: left; }
+  .review-item { text-align: left; padding: 12px 14px; border-radius: 10px; margin-bottom: 8px; font-size: 0.88rem; font-weight: 600; line-height: 1.5; display: flex; gap: 10px; }
+  .review-item.r-correct { background: #e8faf0; color: #1a5c35; }
+  .review-item.r-wrong { background: #fff0f0; color: #8b1a1a; }
+  .score-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .restart-btn { flex: 1; min-width: 140px; padding: 14px; background: var(--navy); color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 1.05rem; letter-spacing: 1px; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); transition: transform 0.15s; }
+  .restart-btn:hover { transform: translateY(-2px); }
+  .new-player-btn { flex: 1; min-width: 140px; padding: 14px; background: white; color: var(--navy); font-family: 'Fredoka One', cursive; font-size: 1.05rem; letter-spacing: 1px; border: 2.5px solid var(--navy); border-radius: 12px; cursor: pointer; transition: transform 0.15s; }
+  .new-player-btn:hover { transform: translateY(-2px); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="diamond-bg"></div>
+<div class="diamond-bg2"></div>
+
+<div class="wrapper">
+  <div class="header">
+    <span class="softball-emoji">🥎</span>
+    <h1>Softball IQ Quiz</h1>
+    <p>10U Situations — Can you make the right play?</p>
+  </div>
+
+  <!-- NAME SCREEN -->
+  <div class="name-screen" id="name-screen">
+    <h2>Who's Playing? ⚾</h2>
+    <p>Enter your name so we can cheer you on — then pick how many questions!</p>
+    <input type="text" class="name-input" id="player-name" placeholder="Your first name..." maxlength="20"
+      oninput="checkName()" onkeydown="if(event.key==='Enter')startQuiz()"/>
+    <div class="q-count-select">
+      <label>How many questions?</label>
+      <div class="count-btns">
+        <button class="count-btn" onclick="setCount(5,this)">5</button>
+        <button class="count-btn active" onclick="setCount(10,this)">10</button>
+        <button class="count-btn" onclick="setCount(15,this)">15</button>
+        <button class="count-btn" onclick="setCount(20,this)">20</button>
+      </div>
+    </div>
+    <button class="start-btn" id="start-btn" onclick="startQuiz()" disabled>⚾ Let's Play!</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap hidden" id="progress-wrap">
+    <div class="progress-label">
+      <span id="prog-text">Question 1</span>
+      <span id="score-live">Score: 0</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill" style="width:10%"></div>
+    </div>
+  </div>
+
+  <!-- QUESTION CARD -->
+  <div class="card hidden" id="quiz-card">
+    <div class="q-badge" id="q-badge">⚾ Situation 1</div>
+    <span class="situation-tag" id="sit-tag"></span>
+    <div style="overflow:hidden">
+      <div class="diamond-diagram" id="diamond-wrap"></div>
+      <p class="q-text" id="q-text"></p>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Situation →</button>
+  </div>
+
+  <!-- SCORE SCREEN -->
+  <div class="score-screen hidden" id="score-screen">
+    <div style="font-size:3rem">🏆</div>
+    <div class="player-name-result" id="result-name"></div>
+    <div class="score-big" id="final-score"></div>
+    <div class="score-label" id="score-label-text"></div>
+    <div class="grade-badge" id="grade-badge"></div>
+    <p class="score-msg" id="score-msg"></p>
+    <div class="review-title">📋 Quick Review</div>
+    <div id="review-list"></div>
+    <div class="score-actions">
+      <button class="restart-btn" onclick="restartQuiz()">🔄 Play Again</button>
+      <button class="new-player-btn" onclick="newPlayer()">👋 New Player</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Diamond SVG helper ──────────────────────────────────────────────────────
+function drawDiamond(runners, label) {
+  const bases = {1:[68,38], 2:[38,8], 3:[8,38]};
+  let marks = '';
+  for (let b=1; b<=3; b++) {
+    const [cx,cy] = bases[b];
+    const on = runners.includes(b);
+    marks += `<rect x="${cx}" y="${cy}" width="18" height="18" fill="${on?'#FF6B6B':'#4ECDC4'}" stroke="${on?'#cc0000':'#1A1A2E'}" stroke-width="2" transform="rotate(45 ${cx+9} ${cy+9})"/>`;
+    if (on) marks += `<circle cx="${cx+9}" cy="${cy+9}" r="5" fill="white" opacity="0.9"/>`;
+  }
+  const home = `<rect x="38" y="68" width="18" height="18" fill="#4ECDC4" stroke="#1A1A2E" stroke-width="2" transform="rotate(45 47 77)"/>`;
+  const lbl = label ? `<text x="38" y="3" font-family="Nunito" font-size="9" font-weight="800" fill="#FFD93D" text-anchor="middle">${label}</text>` : '';
+  const legend = runners.length ? `<text x="47" y="88" font-family="Nunito" font-size="8" font-weight="800" fill="#FF6B6B" text-anchor="middle">● = runner</text>` : '';
+  return `<svg viewBox="-5 -5 90 95" xmlns="http://www.w3.org/2000/svg">
+    <line x1="47" y1="77" x2="17" y2="47" stroke="rgba(26,26,46,0.2)" stroke-width="1.5"/>
+    <line x1="17" y1="47" x2="47" y2="17" stroke="rgba(26,26,46,0.2)" stroke-width="1.5"/>
+    <line x1="47" y1="17" x2="77" y2="47" stroke="rgba(26,26,46,0.2)" stroke-width="1.5"/>
+    <line x1="77" y1="47" x2="47" y2="77" stroke="rgba(26,26,46,0.2)" stroke-width="1.5"/>
+    ${lbl}${home}${marks}${legend}
+  </svg>`;
+}
+
+// ── 100-question bank ──────────────────────────────────────────────────────
+const ALL_QUESTIONS = [
+  // BASERUNNING (14)
+  {tag:"🏃 Baserunning",text:"You're on 1st base, 0 outs, and the batter hits a ground ball to the shortstop. What should you do?",runners:[1],choices:["Stay at 1st — don't move","Run hard to 2nd to force the fielder to make a decision","Run all the way to 3rd","Head back to home plate"],correct:1,feedback:"You MUST run to 2nd — it's a force play! The batter is coming to 1st. Run hard; even if you're out, you make the fielder hurry."},
+  {tag:"🏃 Baserunning",text:"You're on 2nd base with 0 outs. The batter hits a single to left field and the left fielder fields it cleanly. What do you do?",runners:[2],choices:["Score — run all the way home","Stop at 3rd and hold","Stop halfway between 2nd and 3rd","Wait for the coach then jog"],correct:1,feedback:"Hold at 3rd! The left fielder has it cleanly. Taking the sure base (2nd to 3rd) is the smart play — don't risk getting thrown out at home."},
+  {tag:"🏃 Baserunning",text:"Runner on 1st, 1 out. The batter hits a line drive right at the 2nd baseman. What should you do immediately?",runners:[1],choices:["Run hard to 2nd","Freeze and get back to 1st as fast as possible","Run halfway and wait","Keep running no matter what"],correct:1,feedback:"Get back to 1st! A caught line drive can turn into an easy double play if you're too far off the bag. Freeze, read, then scramble back."},
+  {tag:"🏃 Baserunning",text:"You're on 3rd base with 1 out. The batter hits a fly ball to shallow right field. What's the smart play?",runners:[3],choices:["Tag up and try to score after the catch","Run immediately when the ball is hit","Stay on 3rd no matter what","Run halfway and look"],correct:0,feedback:"Tag up! Stand on the base until the ball is caught, then decide whether to go. Shallow right is risky but you should at least be ready to tag."},
+  {tag:"🏃 Baserunning",text:"Bases are loaded, 0 outs. The batter hits a slow ground ball to the pitcher. You're on 3rd. What do you do?",runners:[1,2,3],choices:["Run home immediately","Stay at 3rd","Step off the base and watch","Back up toward 2nd"],correct:0,feedback:"Run home! With bases loaded it's a force situation everywhere. The pitcher's easiest play is 1st base — go score that run!"},
+  {tag:"🏃 Baserunning",text:"You're on 1st base and the pitcher throws a ball in the dirt that gets past the catcher. What's the smart move?",runners:[1],choices:["Stay at 1st — it's too risky","Try to advance to 2nd right away","Wait until the ball is returned to the pitcher","Walk slowly toward 2nd"],correct:1,feedback:"Advance! A passed ball is a great chance to steal a base. The moment the ball gets away, run hard to 2nd. Hesitation means you miss the opportunity."},
+  {tag:"🏃 Baserunning",text:"You're running from 2nd to 3rd. The 3rd base coach waves you home. The throw from the outfield is coming. What do you do?",runners:[2],choices:["Stop at 3rd — it's too risky","Trust the coach and run home hard","Slow down and look at the throw","Go back to 2nd"],correct:1,feedback:"Trust your coach and run! The 3rd base coach can see the whole field. When they say go, put your head down and sprint home."},
+  {tag:"🏃 Baserunning",text:"Runner on 2nd, 0 outs. The batter bunts the ball. What should the runner on 2nd do?",runners:[2],choices:["Stay at 2nd","Advance to 3rd","Run all the way home","Go back toward 1st"],correct:1,feedback:"Advance to 3rd! A bunt moves runners up. The defense is focused on getting the out at 1st, so the runner on 2nd should be able to reach 3rd easily."},
+  {tag:"🏃 Baserunning",text:"You're rounding 1st base on a single and see the ball rolling toward the outfield fence. What's the right call?",runners:[],choices:["Stop at 1st — play it safe","Turn and run hard for 2nd","Slow down to see if the fielder trips","Go back to 1st and wait"],correct:1,feedback:"Turn and go for 2nd! When the ball rolls to the fence it takes the fielder time to get there. Round 1st aggressively and take the extra base."},
+  {tag:"🏃 Baserunning",text:"There are 2 outs and you're on 1st base. The batter hits a fly ball to center. What do you do?",runners:[1],choices:["Tag up and wait","Run immediately on contact","Stand still until the coach tells you","Jog halfway and look"],correct:1,feedback:"Run on contact! With 2 outs, run as soon as the ball is hit. If it drops, you're already running. If caught, the inning is over anyway — nothing to lose."},
+  {tag:"🏃 Baserunning",text:"You're on 3rd base, 0 outs. Your teammate hits a deep fly ball to left that looks catchable. When should you leave 3rd?",runners:[3],choices:["As soon as the ball is hit","After the fielder catches AND releases the ball","When the ball lands","When the umpire says so"],correct:1,feedback:"Leave after the catch! On a tag-up you must wait until the fielder secures the ball. Then go. Leaving early means you can be appealed and called out."},
+  {tag:"🏃 Baserunning",text:"Runner on 1st, 0 outs. The batter swings and misses — but the catcher drops the ball. What can the batter do?",runners:[1],choices:["Nothing — she struck out","Run to 1st — it's an uncaught third strike, but only if 1st is not occupied","Walk to the dugout","Only the umpire decides"],correct:1,feedback:"Run! With a runner already on 1st the uncaught third strike rule doesn't apply — but with an empty 1st base or 2 outs, the batter can run. Know the situation!"},
+  {tag:"🏃 Baserunning",text:"You miss 2nd base while running to 3rd. The defense doesn't throw. You score. What can the defense do?",runners:[],choices:["Nothing — you scored so you're safe","Appeal by throwing to 2nd and asking the umpire","Call timeout","Ask the runner to go back"],correct:1,feedback:"Appeal the play! The defense can throw to 2nd and appeal before the next pitch. If confirmed, you're out and the run doesn't count. Always touch every base!"},
+  {tag:"🏃 Baserunning",text:"3-2 count, 2 outs, runner on 2nd. The pitch is delivered. What should the runner do?",runners:[2],choices:["Stay at 2nd and wait","Run only if it's a hit","Run as the pitch is thrown — it's a full count, 2 outs","Jog halfway and look"],correct:2,feedback:"Run on the pitch! On a full count with 2 outs, the runner goes as the ball is released. If struck out, inning ends anyway. This gives you a huge head start on contact."},
+
+  // DEFENSE – INFIELD (14)
+  {tag:"🧤 Defense",text:"You're the 1st baseman. The throw from the shortstop is in the dirt. What do you do?",runners:[],choices:["Step off the bag to block it","Keep your foot on the bag and scoop it out of the dirt","Jump out of the way","Call for a timeout"],correct:1,feedback:"Scoop it! Keep at least one foot on the bag, stretch toward the throw, and dig it out with your glove. Saving errant throws is one of the most valuable 1st base skills."},
+  {tag:"🧤 Defense",text:"You're playing 3rd base. A hard ground ball comes right at you. What's your first instinct?",runners:[],choices:["Step out of the way","Get in front of it, block it with your body if needed, then throw","Back up and let it go by","Call for the pitcher to help"],correct:1,feedback:"Get in front of it! A good infielder blocks the ball with their body as a backstop. Better to stop it than let it into the outfield. Then make the throw to 1st."},
+  {tag:"🧤 Defense",text:"Runner on 1st, 1 out. A ground ball is hit to the 2nd baseman. What's the ideal play?",runners:[1],choices:["Throw to 1st for the easy out","Throw to 2nd to start a double play, then 1st","Throw to 3rd","Hold the ball and look"],correct:1,feedback:"Go for the double play! Throw to 2nd to force the runner, then 2nd to 1st. Two outs are better than one and it's a huge momentum swing."},
+  {tag:"🧤 Defense",text:"You're the catcher. A batter bunts the ball in front of home plate. Where do you throw?",runners:[1],choices:["Always throw to 1st","Throw to 2nd to get the lead runner","Look the runner back, then throw to 1st for the sure out","Throw home"],correct:2,feedback:"Look the runner back, then throw to 1st. Trying to throw to 2nd from the field is risky. The sure out is almost always 1st base on a bunt from the catcher."},
+  {tag:"🧤 Defense",text:"You're playing 2nd base. A runner is stealing 2nd. The catcher throws to you. When do you apply the tag?",runners:[1],choices:["Tag the base","Tag the runner's hands or feet as she slides in","Wait for the runner to touch the bag, then tag","Stand in front of the bag"],correct:1,feedback:"Tag the runner! It's not a force play — the runner must be tagged. Put the glove down in front of the base and let the runner slide into the tag. Low and firm!"},
+  {tag:"🧤 Defense",text:"You're pitching. A batter bunts toward 1st base. The 1st baseman charges it. What should you do?",runners:[],choices:["Cover 1st base immediately","Stay on the pitching rubber","Back up home plate","Run to 3rd base"],correct:0,feedback:"Cover 1st! When the 1st baseman charges a bunt, she can't field AND get back to the bag. The pitcher runs hard to 1st to take the throw. This is 'pitcher covers 1st.'"},
+  {tag:"🧤 Defense",text:"Runner on 2nd, no outs. The batter hits a slow ground ball to the shortstop. Where should the shortstop throw?",runners:[2],choices:["Throw to 3rd to get the lead runner","Throw to 1st for the sure out","Throw to 2nd","Hold the ball"],correct:1,feedback:"Throw to 1st for the sure out! Going for the lead runner at 3rd is risky and often leads to nobody out. Take the guaranteed out at 1st."},
+  {tag:"🧤 Defense",text:"Runner on 3rd, 0 outs. The batter hits a ground ball to the 3rd baseman. What's the play?",runners:[3],choices:["Step on 3rd and throw to 1st for a double play","Throw home to get the runner scoring","Throw to 1st for the sure out","Tag the runner and throw to 1st"],correct:2,feedback:"Throw to 1st! The runner on 3rd will likely score regardless — there's no force at home, and throwing home with 0 outs is risky. Get the sure out."},
+  {tag:"🧤 Defense",text:"You're the catcher. A batter pops up right behind home plate. What do you do first?",runners:[],choices:["Take off your helmet — it can interfere with tracking","Stand still and wait","Call for the pitcher to take it","Leave your mask on for protection"],correct:0,feedback:"Flip your mask! Once you locate the ball, rip off your catcher's mask and toss it away so you don't trip. Then track the ball and catch it."},
+  {tag:"🧤 Defense",text:"Runners on 1st and 3rd, 1 out. The batter hits a high pop fly to the infield. What is the Infield Fly Rule?",runners:[1,3],choices:["Infielders must catch every pop fly","The batter is automatically out — runners don't have to run or advance","All runners must advance one base","The umpire decides whether the ball is caught"],correct:1,feedback:"The batter is automatically out! The Infield Fly Rule prevents fielders from intentionally dropping a ball to get a cheap double play. Runners can stay or advance at their own risk."},
+  {tag:"🧤 Defense",text:"You're in the outfield. After catching a fly ball, the runner on 3rd is tagging up to score. Where do you throw?",runners:[3],choices:["Throw to 2nd base","Throw to 3rd base","Throw home to the catcher","Throw back to the pitcher"],correct:2,feedback:"Throw home! If a runner on 3rd tags up to score, fire a bullet to the catcher. Aim for the 3rd base side of the plate to help the catcher block."},
+  {tag:"🧤 Defense",text:"You're playing outfield. A fly ball is hit and the sun is right in your eyes. What's the smart move?",runners:[],choices:["Call for a teammate to take it if possible","Use your glove to shield your eyes and attempt it alone","Try to catch it anyway — never give up","Let it drop so no one gets hurt"],correct:0,feedback:"Call for help! If you truly can't see the ball, yell 'Sun!' — a teammate may be able to take it. Communication prevents injuries and errors."},
+  {tag:"🧤 Defense",text:"You're a shortstop. A pop fly goes up between you and the left fielder. Who has priority?",runners:[],choices:["Shortstop always","Left fielder has priority — outfielders are moving forward, call it early","Pitcher runs out to get it","Whoever gets there first takes it silently"],correct:1,feedback:"Outfielders have priority over infielders on pop flies — they're moving in and have a better angle. If the outfielder calls it, the shortstop immediately backs off."},
+  {tag:"🧤 Defense",text:"Bases loaded, 1 out. A fly ball is hit to shallow center. The fielder catches it. What should happen with runners?",runners:[1,2,3],choices:["All runners stay — can't advance on a catch","Runners can tag up and try to advance after the catch","Only the runner on 3rd can tag up","Batter is out and runners reset"],correct:1,feedback:"All runners can tag up! Any runner may tag and advance after a caught fly ball. With bases loaded and 1 out, the runner on 3rd should definitely try to score."},
+
+  // OUTFIELD (5)
+  {tag:"🏟️ Outfield",text:"You're in left field. A ground ball gets past the infield. The runner on 2nd is heading home. What do you do?",runners:[2],choices:["Field it and see what's happening","Field it fast and throw to the cutoff person","Throw directly to home plate","Hold the ball"],correct:1,feedback:"Hit your cutoff! The shortstop or 3rd baseman is your relay. Throw hard and chest-high to them; they can redirect the throw home or hold the runner."},
+  {tag:"🏟️ Outfield",text:"A fly ball is hit over your head in the outfield. How should you move to catch it?",runners:[],choices:["Backpedal slowly, facing the ball","Drop-step and turn, sprinting to where the ball will land","Stand still until it's coming down","Yell for the infielder to come get it"],correct:1,feedback:"Drop-step and run! Never backpedal on a ball hit over your head — it's slow and awkward. Drop-step and sprint to where the ball will land, tracking it over your shoulder."},
+  {tag:"🏟️ Outfield",text:"A ball is hit to right field and the batter is rounding 1st and heading to 2nd. Where does the right fielder throw?",runners:[],choices:["3rd base","Home plate","2nd base","1st base"],correct:2,feedback:"Throw to 2nd! If the batter is heading to 2nd and you have a chance to throw her out, hit the cutoff to 2nd. The shortstop or 2nd baseman will cover depending on the situation."},
+  {tag:"🏟️ Outfield",text:"Your teammate in center field calls for a fly ball. You were also running for it. What should you do?",runners:[],choices:["Keep going — you might get there faster","Immediately back off and yell 'take it!'","Try to catch it together","Stop and watch"],correct:1,feedback:"Back off immediately! When a teammate calls the ball, clear out and back up. Outfield collisions are dangerous. One catches, one backs up — that's teamwork."},
+  {tag:"🏟️ Outfield",text:"There's a runner on 1st and the batter hits a single to center. The runner is rounding 2nd and the coach waves her to 3rd. What does the center fielder do?",runners:[1],choices:["Throw directly to home","Throw to the shortstop cutoff for a relay to 3rd","Throw to 2nd base","Hold the ball"],correct:1,feedback:"Hit the cutoff! Throw hard to the shortstop or 2nd baseman who relays to 3rd. Trying to throw all the way to 3rd from deep center usually sails wide."},
+
+  // PITCHING (6)
+  {tag:"⚾ Pitching",text:"You're pitching. The count is 3-0. What's your goal for the next pitch?",runners:[],choices:["Throw as hard as you can at the corners","Throw a strike — accuracy over power","Intentionally walk the batter","Throw a rise ball"],correct:1,feedback:"Throw a strike! A 3-0 count is dangerous — one more ball and you walk a batter for free. Take something off if needed and hit the zone. Walks are a pitcher's enemy."},
+  {tag:"⚾ Pitching",text:"Bases loaded, 0 outs. You're the pitcher. A perfect bunt is laid down. What's the ideal play?",runners:[1,2,3],choices:["Throw to 1st","Throw to home plate for the force out","Throw to 3rd","Let the catcher decide"],correct:1,feedback:"Throw home! With bases loaded every base is a force. Getting the out at home stops a run. If you can't make the play at home cleanly, go to 1st for the sure out."},
+  {tag:"⚾ Pitching",text:"You've walked two batters in a row and feel frustrated. What's the most important thing to focus on?",runners:[],choices:["Throw harder than ever","Step off the rubber, breathe, and refocus on hitting the catcher's mitt","Ask the coach to pull you","Start throwing to completely different spots"],correct:1,feedback:"Reset mentally! Step off, breathe, look at your catcher, and commit to one pitch at a time. Frustration leads to more walks. Calm is powerful."},
+  {tag:"⚾ Pitching",text:"A batter keeps pulling inside pitches for line drives. What adjustment might help?",runners:[],choices:["Pitch lower","Pitch more outside — on the outer half of the plate","Throw harder","Pitch even more inside"],correct:1,feedback:"Go outside! If a batter is sitting on inside pitches and pulling them, move your location to the outer half. Harder to pull, harder to drive — and she'll have to reach for it."},
+  {tag:"⚾ Pitching",text:"Runner on 1st. As the pitcher, why is it useful to throw from the stretch instead of a full windup?",runners:[1],choices:["The ball goes faster from the stretch","The stretch is a shorter motion that lets you keep an eye on the runner and deliver faster","It's a rule — you must use the stretch with runners on","There's no real difference"],correct:1,feedback:"The stretch is quicker! A full windup gives runners more time to steal. The stretch — a shorter motion — lets you watch the runner and deliver the ball faster to help your catcher."},
+  {tag:"⚾ Pitching",text:"A left-handed batter steps in. Where is generally a smart first pitch location?",runners:[],choices:["High and inside","Low and away (the outside corner from her perspective)","Right down the middle","At her feet"],correct:1,feedback:"Low and away is tough to hit for most batters! For a lefty, that's the outside corner (catcher's left). Harder to pull, harder to drive, and a great first-pitch location to establish."},
+
+  // CATCHING (4)
+  {tag:"🎯 Catching",text:"Runner on 3rd, 1 out. The batter hits a slow roller to the pitcher. The runner on 3rd goes. You're the catcher. What do you do?",runners:[3],choices:["Run toward the pitcher to back up","Stay at home plate to receive a potential throw","Run toward 3rd base","Call timeout"],correct:1,feedback:"Stay home! Protect the plate. If the pitcher fields it, you need to be ready to receive a throw and make the tag. Never leave the plate unguarded in a scoring situation."},
+  {tag:"🎯 Catching",text:"A pitch in the dirt bounces toward the dugout. No one is on base. What does the catcher do?",runners:[],choices:["Chase it and recover it fast","Let the umpire get it","Leave it — no harm done with empty bases","Throw it back to the pitcher quickly"],correct:0,feedback:"Chase it and recover fast! Even with no one on base, good catchers block and recover every ball quickly. It builds habits that matter when runners are on."},
+  {tag:"🎯 Catching",text:"The batter hits a foul tip that you catch on one bounce. Is the batter out?",runners:[],choices:["Yes — a catch on one bounce is an out","No — must be caught directly in the air, no bounce","Out only if it's strike 3","Out only with 2 strikes"],correct:1,feedback:"Not out — must be caught in the air! A foul ball only counts as an out if caught before it touches the ground. One bounce = foul ball, play continues."},
+  {tag:"🎯 Catching",text:"You're the catcher. The batter swings and the ball hits your hand before going into your glove. Is it a catch?",runners:[],choices:["Yes — any contact counts","No — it must be caught cleanly in the glove or secured in both hands","Only if the umpire saw it","Depends on the league"],correct:1,feedback:"Not a clean catch! The ball must be caught in the glove or secured in both hands. If it pops out or wasn't secured, it's not an out. Let the umpire make the call."},
+
+  // SITUATIONAL AWARENESS (10)
+  {tag:"🧠 Situational",text:"Your team is losing by 1 run in the last inning. Runners on 1st and 2nd, 1 out. The batter hits a deep fly ball. As the runner on 2nd, what are your options?",runners:[1,2],choices:["The ball is caught — tag up and try to score","The ball drops — run on contact","Stay put regardless","All of the above depending on the depth and situation"],correct:3,feedback:"Both options work! Tag up if the ball is caught deep enough, or run on contact if it drops. Situational awareness — reading the depth and the fielder — is what separates smart players from great ones."},
+  {tag:"🧠 Situational",text:"Your coach gives you the 'squeeze bunt' signal with a runner on 3rd and 0 outs. What does this mean?",runners:[3],choices:["Swing hard to drive in the runner","Bunt as the runner from 3rd breaks for home — you MUST make contact","Take the pitch no matter what","Point to the outfield like a home run call"],correct:1,feedback:"Squeeze bunt! The runner on 3rd breaks on the pitch and you MUST bunt it in fair territory. Even a weak bunt can score the run if you make contact. Missing it leaves the runner hung out to dry."},
+  {tag:"🧠 Situational",text:"What does 'first and third double steal' mean?",runners:[1,3],choices:["Both runners steal at the same time blindly","The runner on 1st steals 2nd hoping to draw a throw, so the runner on 3rd can score","The batter steals a sign from the catcher","All runners run on every pitch"],correct:1,feedback:"The runner on 1st breaks for 2nd. If the catcher throws to 2nd, the runner on 3rd breaks home. If the catcher fakes or throws home, the runner on 1st stops. A clever two-runner strategy!"},
+  {tag:"🧠 Situational",text:"It's a tie game, last inning, runner on 2nd with 0 outs. Your job as batter is to move the runner to 3rd. What's ideal?",runners:[2],choices:["Swing for the fences","Hit a ground ball to the right side to move the runner","Strike out looking","Bunt only — there's no other option"],correct:1,feedback:"Hit to the right side! A ground ball to the right side moves the runner from 2nd to 3rd with 1 out. Now any hit, sac fly, or passed ball can score her. These are called 'productive outs.'"},
+  {tag:"🧠 Situational",text:"You're in the field and you see a runner miss 2nd base on her way to 3rd. The defense doesn't notice. She scores. What can your team do?",runners:[],choices:["Nothing — if the umpire doesn't call it, it's fine","Appeal by throwing to 2nd and asking the umpire before the next pitch","Call timeout and talk to the coach","Ask the runner to go back and touch it"],correct:1,feedback:"Appeal the play! Throw to 2nd and ask the umpire before the next pitch. If confirmed, the runner is out and the run doesn't count. Appeals must happen before the next pitch."},
+  {tag:"🧠 Situational",text:"Your team is up by 5 runs in the last inning. The other team has runners on base. How does your approach change?",runners:[1,2],choices:["Play normally — it doesn't change anything","Play smart — no unnecessary risks, no wild throws","Play deeper so everything is caught","It doesn't matter since you're winning"],correct:1,feedback:"Play smart! Big leads disappear fast. Don't give up extra bases with risky throws or mental lapses. Protect the lead — play focused, not relaxed."},
+  {tag:"🧠 Situational",text:"You're playing in a tournament and just had a long inning in the field. You're leading off the next half-inning. What's your mental focus?",runners:[],choices:["Think about what just happened in the field","Clear your head, get loose, and focus on seeing the ball — switch modes","Watch teammates warm up before your at-bat","Stay in the dugout until the last second"],correct:1,feedback:"Switch modes! Great players separate offense and defense mentally. Take swings, breathe, and get focused on the ball. Mental transitions between innings are a huge part of softball IQ."},
+  {tag:"🧠 Situational",text:"You're at bat. The infield is playing 'in' (close to home plate). What does this tell you?",runners:[3],choices:["They want to make double plays","They're giving up on the inning","They are trying to throw out the runner at home on a ground ball","They think you can't hit"],correct:2,feedback:"They're playing at home! The infield drawn in means they want to throw home on a ground ball. This also opens up gaps — a hard-hit ball through a pulled-in infield goes further."},
+  {tag:"🧠 Situational",text:"After a tough loss, what's the best thing to do on the car ride home?",runners:[],choices:["Replay every mistake in your head for hours","Be angry at teammates","Briefly reflect on one or two things to improve, then rest and reset","Quit softball"],correct:2,feedback:"Reflect briefly, then let it go! Great athletes review their performance briefly, identify something to improve, and move on. Obsessing over a loss hurts future performance."},
+  {tag:"🧠 Situational",text:"Your team's winning big and players are goofing off in the field. Why is this dangerous?",runners:[],choices:["It's not — winning big means you can relax","Momentum can change fast — one big inning can erase a lead","It makes the other team feel bad","The umpire will penalize you"],correct:1,feedback:"Never relax! Big leads disappear in softball. One or two errors, a few walks, and suddenly a 7-run lead is gone. Play the same whether up 1 or up 10."},
+
+  // HITTING (9)
+  {tag:"🏏 Hitting",text:"The count is 0-2. How should your approach at the plate change?",runners:[],choices:["Swing at everything — protect the plate","Guess what pitch is coming","Take a pitch no matter what","Swing only at pitches right down the middle"],correct:0,feedback:"Protect the plate! With 2 strikes, expand your zone a little. You can't afford to take a borderline pitch. Shorten your swing and just make contact."},
+  {tag:"🏏 Hitting",text:"The pitcher is throwing very fast and you keep swinging too late. What adjustment might help?",runners:[],choices:["Stand further from the plate","Move your hands forward and start your swing earlier","Swing harder","Close your eyes to time it"],correct:1,feedback:"Start earlier! If you're consistently late, your timing is off. Load and start your swing a little sooner. Some batters also move closer in the box to see the pitch quicker."},
+  {tag:"🏏 Hitting",text:"A pitcher keeps throwing rise balls that you keep popping up. What should you try?",runners:[],choices:["Swing lower, hitting the bottom half of the ball","Swing higher","Stand further from the pitcher","Swing at all pitches to make contact"],correct:0,feedback:"Stay down! Rise balls trick batters into swinging under them. Focus on hitting the bottom half of the ball, keep your hands down, and make solid contact."},
+  {tag:"🏏 Hitting",text:"A drop ball keeps bouncing before it gets to you and you keep swinging early. What's the best response?",runners:[],choices:["Stop swinging altogether","Hope for a walk","Let it get deeper into the hitting zone before swinging — wait on it","Choke up on the bat"],correct:2,feedback:"Wait on it! A drop ball dives at the end. Let it travel deeper before you commit. Swinging early causes you to miss it above. Stay patient and let it sink."},
+  {tag:"🏏 Hitting",text:"The pitcher is throwing very slowly and you keep swinging too early. What should you adjust?",runners:[],choices:["Swing earlier","Wait longer — let the ball fully travel before starting your swing","Step out of the box","Stop watching the ball early"],correct:1,feedback:"Stay back! Slow pitchers trick batters into committing early. Load up, wait, and don't start your swing until you're sure of the pitch. Patience is key against off-speed."},
+  {tag:"🏏 Hitting",text:"Your coach signals a 'hit-and-run.' What does that mean?",runners:[1],choices:["Hit the ball and run around all the bases","The runner on 1st goes on the pitch and you MUST swing — ideally to the right side","The batter runs while the pitcher throws","Swing only at strikes"],correct:1,feedback:"The runner runs, you swing! On a hit-and-run the runner goes on the pitch and you must swing — even if it's a bad pitch. This protects the runner and hopefully creates a hit through the opened gap."},
+  {tag:"🏏 Hitting",text:"You bunt the ball foul with 2 strikes. What happens?",runners:[],choices:["Still 2 strikes","You're out","1 more chance — it becomes a regular foul","Count resets to 0-2"],correct:1,feedback:"You're out! A foul bunt with 2 strikes is a strikeout. Unlike a regular foul ball, a bunted foul on strike 3 ends the at-bat. Be very careful bunting late in the count."},
+  {tag:"🏏 Hitting",text:"What's a 'sac fly' (sacrifice fly)?",runners:[3],choices:["A bunt that scores a runner","A fly ball that's caught but allows a runner on 3rd to tag up and score — batter gets an RBI","Swinging without making contact","A fly ball that goes over the fence"],correct:1,feedback:"A sac fly! The batter makes an out (caught fly ball) but the runner scores. She gets an RBI and no at-bat is charged — it doesn't hurt batting average."},
+  {tag:"🏏 Hitting",text:"What is a 'slap hit' and why do fast left-handed batters use it?",runners:[],choices:["A hard swing intended for a home run","A running hit where the batter takes a running step toward the pitcher while making contact, using speed to beat the throw to 1st","A bunt that goes foul","A checked swing"],correct:1,feedback:"The slap hit! Left-handed slap hitters run toward the pitcher and make contact, starting their sprint to 1st before the ball even leaves the bat. It combines a hit and a stolen base into one play — very hard to defend!"},
+
+  // RULES & KNOWLEDGE (14)
+  {tag:"📚 Rules",text:"What is a 'force out'?",runners:[1],choices:["A runner being tagged while sliding","An out made by touching the base before the runner arrives, when she had to advance","Any out made by the infield","An out made by the pitcher"],correct:1,feedback:"A force out happens when a runner must advance because the batter or another runner is coming behind them. The fielder just touches the base — no tag needed!"},
+  {tag:"📚 Rules",text:"How many outs are in a half-inning in softball?",runners:[],choices:["2","3","4","6"],correct:1,feedback:"3 outs! Each team gets 3 outs per half-inning. A standard game has 7 innings. Three outs and you switch — offense becomes defense."},
+  {tag:"📚 Rules",text:"A batter is hit by a pitch. What happens?",runners:[],choices:["She bats again","She goes to 1st base","It counts as a strike","She chooses to swing or take the base"],correct:1,feedback:"She takes 1st base! If a pitched ball hits a batter (who made a reasonable attempt to avoid it), she automatically advances to 1st. It's called an HBP — Hit By Pitch."},
+  {tag:"📚 Rules",text:"What is the strike zone?",runners:[],choices:["Anywhere over home plate","Over home plate, between the batter's armpits and knees — a 3D box","Only the middle of the plate at waist height","Different for every umpire"],correct:1,feedback:"The strike zone is a 3D box over home plate from roughly the armpits to the knees. Pitches in this zone are strikes if not swung at. Umpires have discretion, so adjust to each umpire's zone."},
+  {tag:"📚 Rules",text:"Can a runner advance on a foul ball (that isn't caught)?",runners:[3],choices:["Yes, always","No — foul ball is a dead ball, all runners return","Only with 2 outs","Only if the ball is caught in the outfield"],correct:1,feedback:"No advancing on a foul ball! An uncaught foul is a dead ball — all runners return to their base. EXCEPTION: if the foul ball is caught in the air, runners can tag up and try to advance."},
+  {tag:"📚 Rules",text:"What does 'ERA' stand for?",runners:[],choices:["Earned Run Allowed","Errors Recorded Accurately","Earned Run Average — average earned runs allowed per 7 innings pitched","Extra Run Attempt"],correct:2,feedback:"ERA = Earned Run Average! It measures how many earned runs a pitcher allows on average per 7 innings. A low ERA (like 1.50) means the pitcher is very tough to score against."},
+  {tag:"📚 Rules",text:"What is a 'double play'?",runners:[1],choices:["Two home runs in one game","Two outs recorded on the same continuous play","A play where two fielders are involved","Batting twice in one inning"],correct:1,feedback:"Two outs, one play! The most common: ground ball, throw to 2nd for one out, relay to 1st for a second out. A huge momentum swing for the defense!"},
+  {tag:"📚 Rules",text:"If a batted ball hits the foul pole, what is the call?",runners:[],choices:["Foul ball","Home run","Dead ball","Do-over pitch"],correct:1,feedback:"HOME RUN! The foul pole is in fair territory. Any ball hitting it has cleared the fence in fair territory. Despite the confusing name, it's a home run, not a foul!"},
+  {tag:"📚 Rules",text:"What is a 'walk' (base on balls)?",runners:[],choices:["When the batter jogs to 1st on a slow grounder","When the pitcher throws 4 balls and the batter advances to 1st","When the batter is hit by the pitch","When the batter requests to go to 1st"],correct:1,feedback:"4 balls = a walk! If a pitcher throws 4 pitches out of the strike zone without a strikeout, the batter automatically advances to 1st. Also called a 'base on balls' (BB)."},
+  {tag:"📚 Rules",text:"What does 'batting average' measure?",runners:[],choices:["How hard you hit the ball","Hits divided by at-bats (H ÷ AB)","Total runs scored","Home run count"],correct:1,feedback:"Batting average = Hits ÷ At-Bats. A .300 average means you get a hit 30% of the time. Walks, sac flies, and HBPs don't count as at-bats."},
+  {tag:"📚 Rules",text:"What is an RBI?",runners:[],choices:["Run Batted In — a batter causes a run to score","Run Before Inning — a run scored before 3 outs","Really Big Inning","Runners Behind the Infield"],correct:0,feedback:"RBI = Run Batted In! You get credit whenever your at-bat (hit, walk with bases loaded, sac fly) directly results in a run scoring. A key offensive stat."},
+  {tag:"📚 Rules",text:"What is 'obstruction' in softball?",runners:[],choices:["When a runner interferes with a fielder trying to catch a ball","When a fielder illegally blocks a runner's path when she doesn't have the ball","When the batter steps out of the box","When a base coach interferes with play"],correct:1,feedback:"Obstruction is when a fielder blocks a runner's path WITHOUT the ball. The umpire calls obstruction and the runner is typically awarded the base she was going to. Fielders can only block a base when making a play."},
+  {tag:"📚 Rules",text:"What does the 'on-deck circle' mean?",runners:[],choices:["Where fielders warm up between innings","The area where the next batter prepares while waiting for her turn at bat","A circle drawn around the pitcher's mound","Where base coaches stand"],correct:1,feedback:"The on-deck circle is where the NEXT batter warms up! While the current batter is at the plate, the on-deck batter takes practice swings, watches the pitcher, and gets mentally ready."},
+  {tag:"📚 Rules",text:"In a regulation 10U game, how many innings are typically played?",runners:[],choices:["9 innings","6 innings","7 innings","5 innings"],correct:1,feedback:"6 innings! Most 10U leagues play 6-inning games (compared to the standard 7 in older divisions). Some tournaments may shorten to 5 due to time limits. Always check your league's rules!"},
+
+  // TEAMWORK & COMMUNICATION (5)
+  {tag:"🤝 Teamwork",text:"Your pitcher just gave up a big hit. She looks upset on the mound. What's the best thing to do?",runners:[],choices:["Ignore her — she needs to focus","Walk to the mound and give a fist bump — 'You've got this' — then get back in position","Tell her what she did wrong","Talk to the coach instead"],correct:1,feedback:"Be her teammate! A quick fist bump and 'you've got this' can make a huge difference. Great teams lift each other up, especially after tough moments. Softball is a mental sport!"},
+  {tag:"🤝 Teamwork",text:"You made an error and feel terrible. The next ball is hit right to you. What's the right mindset?",runners:[],choices:["Panic and hope it doesn't come to you","Block out the error, focus on the next play like it's a brand-new game","Ask to be taken out","Apologize out loud to teammates"],correct:1,feedback:"Flush it! Every great fielder has errors. The mental key is resetting after a mistake and attacking the next ball with confidence. Errors that get in your head cause more errors. One play at a time!"},
+  {tag:"🤝 Teamwork",text:"You're having a great game but your teammate is struggling. How do you handle it?",runners:[],choices:["Tell her what she's doing wrong","Stay focused on your game and cheer her on from the dugout","Ignore her — not your problem","Ask the coach to give her your advice"],correct:1,feedback:"Cheer and focus! It's not your job to coach your teammate, but it IS your job to support her. Encouragement in the dugout costs nothing and means everything."},
+  {tag:"🤝 Teamwork",text:"Your coach gives you a play signal you don't recognize. What do you do?",runners:[],choices:["Guess and do something","Call timeout and ask the coach to clarify","Ask a teammate quietly before the pitch","Just swing away"],correct:1,feedback:"Ask the coach! Never guess on a play call — a wrong read can cost an out or a run. Step out of the box, ask for a timeout, and get the sign clarified. Coaches would rather repeat than have a mistake."},
+  {tag:"🤝 Teamwork",text:"A ball drops between two outfielders because nobody called it. Whose fault is it?",runners:[],choices:["The center fielder always","The one who got there last","Both share responsibility — communication broke down","The infielder backing up"],correct:2,feedback:"Communication breakdown! When nobody calls a ball, the whole team shares responsibility. After the play, calmly discuss who has priority in that zone. Never blame one player."},
+
+  // POSITIONING (5)
+  {tag:"📍 Positioning",text:"Who covers 2nd base when a ball is hit to left field with a runner on 1st?",runners:[1],choices:["The pitcher","The 2nd baseman","The shortstop moves to 2nd to receive a throw","The catcher"],correct:2,feedback:"The shortstop! On balls to left field, the shortstop covers 2nd for a potential throw. The 2nd baseman backs up. On balls to the right side, the 2nd baseman covers 2nd."},
+  {tag:"📍 Positioning",text:"A bunt is laid down toward the 3rd base line. Who has priority?",runners:[],choices:["The pitcher always fields all bunts","The 3rd baseman or pitcher — whoever gets there first and calls it","The catcher","The shortstop"],correct:1,feedback:"3rd baseman or pitcher! Both charge, communication is key. Whoever gets there first and has the best angle calls it. The catcher covers home and 1st baseman covers their bag."},
+  {tag:"📍 Positioning",text:"Where does the shortstop go on a deep ball hit to right-center with runners on base?",runners:[1,2],choices:["Stays near 2nd base","Moves toward left-center as a relay cutoff between right field and 3rd","Backs up the pitcher","Runs to 3rd base"],correct:1,feedback:"The shortstop becomes the cutoff relay! She positions between the outfielder and 3rd base to take the relay throw and redirect it. Cutoff plays require exact positioning and teamwork."},
+  {tag:"📍 Positioning",text:"Where should the center fielder be positioned by default?",runners:[],choices:["Far back near the fence always","Shallow, near the infield grass","Slightly behind the infield, centered, depth based on the hitter","Down the right field line"],correct:2,feedback:"Center field owns the middle! She's the captain of the outfield — she directs traffic, calls off outfielders, and adjusts depth to the hitter. Power hitter = deeper; slap hitter = shallower."},
+  {tag:"📍 Positioning",text:"Runner on 2nd, no outs. As right fielder, where should you be positioned?",runners:[2],choices:["Straight away right field","Shifted slightly toward the right field line to cut off balls in the corner","Deep and shifted toward center","It doesn't matter"],correct:1,feedback:"Play the situation! With a runner on 2nd, shift slightly toward the line to prevent balls reaching the right field corner. This limits extra bases and helps prevent the run from scoring on a single."},
+
+  // MENTAL GAME (4)
+  {tag:"🧘 Mental Game",text:"It's your first at-bat in a big tournament. You feel super nervous. What should you focus on?",runners:[],choices:["How important the game is","Your statistics","Seeing the ball — watch it leave the pitcher's hand","What the other team thinks of you"],correct:2,feedback:"See the ball! The best way to fight nerves is to narrow your focus to one simple cue: track the ball from the pitcher's release. Big moments feel smaller when you're locked in on a tiny dot."},
+  {tag:"🧘 Mental Game",text:"You struck out twice in a row. It's your third at-bat. What's the right approach?",runners:[],choices:["Swing at the first pitch to prove you can hit","Overthink every pitch","Go up with a clear plan, stay patient, and forget the previous at-bats","Ask to bunt instead"],correct:2,feedback:"Blank slate! Elite hitters don't drag previous at-bats into the next one. Have a plan, breathe, and compete. You WILL get a hit."},
+  {tag:"🧘 Mental Game",text:"Your pitcher is on a roll and the other team is starting to complain about calls. What should your team do?",runners:[],choices:["Argue back to support your pitcher","Stay focused, let the coaches handle any disputes, and keep energy high","Slow down the game to give the other team time to cool off","Tell the umpire the other team is cheating"],correct:1,feedback:"Stay focused! Arguing pulls your team's energy away from the game. Trust your coaches to handle disputes. Keep cheering, keep competing, and let your play do the talking."},
+  {tag:"🧘 Mental Game",text:"You're subbed in mid-game for the first time all tournament. How should you approach your at-bat?",runners:[],choices:["Feel nervous — you haven't had time to get into a rhythm","See it as a clean slate — you haven't had any bad at-bats yet today","Ask the coach why you weren't playing before","Try to make a big play to prove yourself"],correct:1,feedback:"Clean slate! Coming in fresh can actually be an advantage. You haven't had bad at-bats weighing on you. Focus on seeing the ball, have a plan, and play your game."},
+
+  // SOFTBALL CULTURE (4)
+  {tag:"🌟 Softball Culture",text:"What does it mean to 'play smart' even when you're not the fastest or strongest player?",runners:[],choices:["Give up since athleticism is all that matters","Use knowledge of situations, positioning, and strategy to make plays others miss","Only play positions that match your strengths","Talk a lot on the field"],correct:1,feedback:"Smart beats fast! Knowing where to be before the ball is hit, backing up the right base, hitting the cutoff — softball IQ plays help ANY player contribute. Coaches love smart, heady players."},
+  {tag:"🌟 Softball Culture",text:"Why do softball players chant and cheer in the dugout?",runners:[],choices:["Just to be loud","To distract the pitcher on the other team","To keep energy high, encourage teammates, and stay mentally in the game","Because the coaches make them"],correct:2,feedback:"Dugout energy is real! Cheering keeps spirits up, encourages hitters and pitchers, and keeps everyone locked in. Great softball teams are LOUD — positive energy is contagious!"},
+  {tag:"🌟 Softball Culture",text:"You hit a walk-off single to win a championship. Your teammates rush the field. What's the most important thing to do first?",runners:[],choices:["Run back to the dugout","Touch 1st base to make sure the run counts!","Celebrate immediately before touching the bag","Take a bow"],correct:1,feedback:"Touch the bag FIRST! In the excitement of a walk-off, many runners forget to touch 1st. If appealed and you missed the bag, the run could be called back. THEN celebrate! 🥎🏆"},
+  {tag:"🌟 Softball Culture",text:"What's the best thing to say to an opponent after a tough loss?",runners:[],choices:["'You were lucky'","'Good game' — and mean it","Nothing — walk straight to the dugout","Complain to your parents"],correct:1,feedback:"'Good game' is a tradition! Showing respect to opponents win or lose is a cornerstone of softball culture. Shake hands with dignity. It shows the character of you AND your team."},
+];
+
+// ── Category colors ────────────────────────────────────────────────────────
+const CATEGORY_COLORS = {
+  '🏃 Baserunning':      { bg: '#FFF0E0', color: '#CC6600', border: '#FF9933' },
+  '🧤 Defense':          { bg: '#E0FAF8', color: '#1A7A74', border: '#4ECDC4' },
+  '🏟️ Outfield':         { bg: '#E8FAE8', color: '#2D7A36', border: '#6BCB77' },
+  '⚾ Pitching':          { bg: '#FFE8E8', color: '#CC2222', border: '#FF6B6B' },
+  '🎯 Catching':          { bg: '#F0E8FF', color: '#5B2D8E', border: '#9B59B6' },
+  '🧠 Situational':       { bg: '#E8F4FF', color: '#1A5599', border: '#4A90D9' },
+  '🏏 Hitting':           { bg: '#FFFAE0', color: '#AA8800', border: '#FFD93D' },
+  '📚 Rules':             { bg: '#E8EEFF', color: '#2A3580', border: '#5C6BC0' },
+  '🤝 Teamwork':          { bg: '#FFE8F5', color: '#A01060', border: '#E91E8C' },
+  '📍 Positioning':       { bg: '#E8FFF0', color: '#1A6640', border: '#27AE60' },
+  '🧘 Mental Game':       { bg: '#E8F8F0', color: '#1A6648', border: '#78C5A0' },
+  '🌟 Softball Culture':  { bg: '#FFF8E0', color: '#AA7700', border: '#F0B429' },
+};
+
+// ── App state ──────────────────────────────────────────────────────────────
+let playerName = '';
+let sessionQuestions = [];
+let sessionCount = 10;
+let current = 0, score = 0;
+let userAnswers = [], answered = false;
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function shuffle(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+// ── Name screen ────────────────────────────────────────────────────────────
+function checkName() {
+  document.getElementById('start-btn').disabled = !document.getElementById('player-name').value.trim();
+}
+function setCount(n, btn) {
+  sessionCount = n;
+  document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function startQuiz() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) return;
+  playerName = name;
+  sessionQuestions = shuffle(ALL_QUESTIONS).slice(0, sessionCount);
+  current = 0; score = 0; userAnswers = [];
+  hide('name-screen');
+  show('progress-wrap');
+  show('quiz-card');
+  renderQuestion();
+}
+
+// ── Quiz ───────────────────────────────────────────────────────────────────
+function renderQuestion() {
+  answered = false;
+  const q = sessionQuestions[current];
+  document.getElementById('q-badge').textContent = `⚾ Situation ${current+1}`;
+
+  const cat = CATEGORY_COLORS[q.tag] || { bg: '#F4F4F0', color: '#555', border: '#ccc' };
+  const sitTag = document.getElementById('sit-tag');
+  sitTag.textContent = q.tag;
+  sitTag.style.background = cat.bg;
+  sitTag.style.color = cat.color;
+  const card = document.getElementById('quiz-card');
+  card.style.borderTop = `5px solid ${cat.border}`;
+
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('diamond-wrap').innerHTML = drawDiamond(q.runners||[], q.label||null);
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  ['A','B','C','D'].forEach((ltr, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-letter">${ltr}</span><span>${q.choices[i]}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    choicesEl.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('next-btn').className = 'next-btn';
+  document.getElementById('prog-fill').style.width = ((current+1)/sessionCount*100)+'%';
+  document.getElementById('prog-text').textContent = `Question ${current+1} of ${sessionCount}`;
+  document.getElementById('score-live').textContent = `Score: ${score}`;
+
+  card.style.animation='none'; card.offsetHeight;
+  card.style.animation='slideUp 0.45s cubic-bezier(.22,1,.36,1)';
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = sessionQuestions[current];
+  const btns = document.querySelectorAll('.choice-btn');
+  btns.forEach(b => b.disabled = true);
+  const ok = idx === q.correct;
+  if (ok) score++;
+  userAnswers.push({ correct: ok, qIndex: current });
+  btns[idx].classList.add(ok ? 'correct' : 'wrong');
+  if (!ok) btns[q.correct].classList.add('correct');
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (ok ? 'correct-fb' : 'wrong-fb');
+  fb.innerHTML = `<span style="font-size:1.2em">${ok?'✅':'❌'}</span> ${ok?'<strong>Nice play!</strong> ':'<strong>Good try!</strong> '}${q.feedback}`;
+  document.getElementById('score-live').textContent = `Score: ${score}`;
+  const nb = document.getElementById('next-btn');
+  nb.className = 'next-btn show';
+  nb.textContent = current < sessionCount-1 ? 'Next Situation →' : '🏆 See My Score!';
+}
+
+function nextQuestion() {
+  current++;
+  current >= sessionCount ? showScore() : renderQuestion();
+}
+
+// ── Score screen ───────────────────────────────────────────────────────────
+function showScore() {
+  hide('quiz-card'); hide('progress-wrap');
+  show('score-screen');
+  const pct = score / sessionCount;
+  document.getElementById('result-name').textContent = `Way to go, ${playerName}! 🥎`;
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('score-label-text').textContent = `out of ${sessionCount}`;
+
+  let grade, label, msg;
+  if      (pct >= 0.9)  { grade='S'; label='All-Star Player! 🌟'; msg=`${playerName}, you know this game inside and out. Coach would be proud — you made the right call almost every time!`; }
+  else if (pct >= 0.75) { grade='A'; label='Great Ballplayer! 💪'; msg=`Solid softball IQ, ${playerName}! You're making smart plays most of the time. Keep it up and you'll be a team leader!`; }
+  else if (pct >= 0.55) { grade='B'; label='Good Hustle! 🏃';     msg=`You know the basics, ${playerName}! Review the ones you missed and you'll be even sharper next game.`; }
+  else                   { grade='C'; label='Keep Practicing! 🥎'; msg=`Every great player started right where you are, ${playerName}! Go over the answers with your coach and keep working — you'll get there!`; }
+
+  const badge = document.getElementById('grade-badge');
+  badge.textContent = label;
+  badge.className = `grade-badge grade-${grade}`;
+  document.getElementById('score-msg').textContent = msg;
+
+  const rl = document.getElementById('review-list');
+  rl.innerHTML = '';
+  userAnswers.forEach(({correct, qIndex}) => {
+    const q = sessionQuestions[qIndex];
+    const d = document.createElement('div');
+    d.className = `review-item ${correct?'r-correct':'r-wrong'}`;
+    d.innerHTML = `<span style="font-size:1.1em">${correct?'✅':'❌'}</span><span><strong>${q.tag}</strong> — ${correct?'Correct!':'Correct answer: '+q.choices[q.correct]}</span>`;
+    rl.appendChild(d);
+  });
+}
+
+function restartQuiz() {
+  sessionQuestions = shuffle(ALL_QUESTIONS).slice(0, sessionCount);
+  current = 0; score = 0; userAnswers = [];
+  hide('score-screen');
+  show('progress-wrap'); show('quiz-card');
+  renderQuestion();
+}
+function newPlayer() {
+  hide('score-screen');
+  document.getElementById('player-name').value = '';
+  document.getElementById('start-btn').disabled = true;
+  show('name-screen');
+}
+</script>
+</body>
+</html>
